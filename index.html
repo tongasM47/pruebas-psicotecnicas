@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pruebas Psicotécnicas — Práctica</title>
+<style>
+  :root{
+    --bg:#0f1220; --card:#191d31; --card2:#20263f; --line:#2c3350;
+    --txt:#e8ebf5; --muted:#9aa3c4; --acc:#5b8cff; --acc2:#7a5bff;
+    --ok:#2fbf71; --ok-bg:#123528; --bad:#ff5d6c; --bad-bg:#3a1620;
+    --chip:#242a44;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Segoe UI",Roboto,-apple-system,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,#1c2340,transparent),
+               linear-gradient(160deg,#0f1220,#0c0f1a 60%);
+    background-color:var(--bg);
+    background-attachment:fixed;
+    color:var(--txt);min-height:100vh;line-height:1.5;
+  }
+  .wrap{max-width:860px;margin:0 auto;padding:24px 18px 80px}
+  header.top{text-align:center;margin-bottom:18px}
+  header.top h1{font-size:1.7rem;margin:0 0 4px;font-weight:700;
+    background:linear-gradient(90deg,#7aa2ff,#b58bff);-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  header.top p{color:var(--muted);margin:0;font-size:.95rem}
+
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:20px 0}
+  .tab{
+    background:var(--card);border:1px solid var(--line);color:var(--muted);
+    padding:9px 15px;border-radius:999px;cursor:pointer;font-size:.9rem;
+    font-weight:600;transition:.18s;user-select:none;display:flex;gap:7px;align-items:center
+  }
+  .tab:hover{border-color:var(--acc);color:var(--txt)}
+  .tab.active{background:linear-gradient(90deg,var(--acc),var(--acc2));
+    color:#fff;border-color:transparent;box-shadow:0 4px 18px -6px var(--acc2)}
+  .tab .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.6}
+
+  .bar{display:flex;justify-content:space-between;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:12px 16px;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+  .bar .stat{font-size:.85rem;color:var(--muted)}
+  .bar .stat b{color:var(--txt);font-size:1rem}
+  .progress{flex:1;min-width:160px;height:8px;background:var(--card2);
+    border-radius:99px;overflow:hidden;margin:0 6px}
+  .progress i{display:block;height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--acc),var(--acc2));transition:.35s}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
+    padding:22px;box-shadow:0 20px 50px -30px #000}
+  .qmeta{display:flex;justify-content:space-between;align-items:center;
+    color:var(--muted);font-size:.8rem;margin-bottom:12px;text-transform:uppercase;
+    letter-spacing:.06em}
+  .qmeta .catchip{background:var(--chip);padding:4px 10px;border-radius:99px;
+    color:var(--acc);font-weight:700}
+  .qtext{font-size:1.18rem;font-weight:600;margin:0 0 6px}
+  .qfig{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;
+    margin:16px 0;align-items:center}
+  .figbox{background:var(--card2);border:1px solid var(--line);border-radius:12px;
+    padding:10px;display:flex;align-items:center;justify-content:center}
+  .figbox.q{min-width:60px;min-height:60px}
+  .mono{font-family:"Courier New",monospace;letter-spacing:.12em;
+    font-size:1.15rem;background:var(--card2);padding:6px 12px;border-radius:8px;
+    border:1px solid var(--line);display:inline-block}
+
+  .opts{display:grid;gap:10px;margin-top:18px}
+  .opt{
+    display:flex;align-items:center;gap:12px;background:var(--card2);
+    border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;
+    cursor:pointer;transition:.15s;font-size:1rem;text-align:left;width:100%;
+    color:var(--txt);font-family:inherit
+  }
+  .opt:hover:not(.locked){border-color:var(--acc);transform:translateY(-1px)}
+  .opt .key{width:28px;height:28px;flex:none;border-radius:8px;background:var(--chip);
+    display:flex;align-items:center;justify-content:center;font-weight:700;
+    color:var(--muted);font-size:.9rem}
+  .opt.locked{cursor:default}
+  .opt.correct{border-color:var(--ok);background:var(--ok-bg)}
+  .opt.correct .key{background:var(--ok);color:#062416}
+  .opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+  .opt.wrong .key{background:var(--bad);color:#2a0810}
+  .opt svg{display:block}
+
+  .explain{margin-top:16px;border-radius:12px;padding:14px 16px;font-size:.95rem;
+    display:none;border:1px solid var(--line)}
+  .explain.show{display:block}
+  .explain.good{background:var(--ok-bg);border-color:#1f6b48}
+  .explain.bad{background:var(--bad-bg);border-color:#7a2634}
+  .explain b{display:block;margin-bottom:4px}
+
+  .nav{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+  .btn{background:var(--card);border:1px solid var(--line);color:var(--txt);
+    padding:11px 20px;border-radius:12px;cursor:pointer;font-weight:600;
+    font-size:.95rem;transition:.15s;font-family:inherit}
+  .btn:hover{border-color:var(--acc)}
+  .btn.primary{background:linear-gradient(90deg,var(--acc),var(--acc2));
+    border-color:transparent;color:#fff}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+
+  .done{text-align:center;padding:30px}
+  .done h2{margin:0 0 8px}
+  .done .score{font-size:2.6rem;font-weight:800;margin:10px 0;
+    background:linear-gradient(90deg,#7aa2ff,#b58bff);-webkit-background-clip:text;
+    background-clip:text;color:transparent}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:26px}
+  @media(max-width:520px){.qtext{font-size:1.05rem}.tab{padding:8px 12px;font-size:.82rem}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Pruebas Psicotécnicas</h1>
+    <p>Práctica libre · respuesta y explicación al instante</p>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="bar">
+    <span class="stat">Pregunta <b id="curNum">1</b>/<b id="totNum">1</b></span>
+    <span class="progress"><i id="progFill"></i></span>
+    <span class="stat">Aciertos <b id="score">0</b></span>
+  </div>
+
+  <div class="card" id="card"></div>
+
+  <footer>Hecho para practicar. Repetí las categorías las veces que quieras 💪</footer>
+</div>
+
+<script>
+/* ---------- Helpers para figuras (razonamiento abstracto) ---------- */
+function svgWrap(inner,s=54){return `<svg width="${s}" height="${s}" viewBox="0 0 54 54">${inner}</svg>`;}
+const C={f:'#7aa2ff',s:'#b58bff',line:'#e8ebf5',none:'none'};
+// puntos
+function dots(n){let out='';const pos=[[27,27],[15,15],[39,39],[39,15],[15,39],[27,12]];
+  for(let i=0;i<n;i++){const[x,y]=pos[i];out+=`<circle cx="${x}" cy="${y}" r="5" fill="${C.f}"/>`;}
+  return svgWrap(out);}
+// flecha con rotación (0=arriba,90=derecha,180=abajo,270=izquierda)
+function arrow(deg){return svgWrap(`<g transform="rotate(${deg} 27 27)"><line x1="27" y1="44" x2="27" y2="12" stroke="${C.line}" stroke-width="3"/><polygon points="27,6 21,18 33,18" fill="${C.s}"/></g>`);}
+// polígono regular de n lados
+function poly(n){const r=18,cx=27,cy=28;let pts='';for(let i=0;i<n;i++){const a=(-90+i*360/n)*Math.PI/180;pts+=`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)} `;}
+  return svgWrap(`<polygon points="${pts}" fill="none" stroke="${C.f}" stroke-width="2.5"/>`);}
+// círculo lleno o vacío
+function circle(fill){return svgWrap(`<circle cx="27" cy="27" r="15" fill="${fill?C.f:'none'}" stroke="${C.s}" stroke-width="2.5"/>`);}
+// cuadrado con n divisiones sombreadas (barras)
+function bars(n){let out='';for(let i=0;i<n;i++){out+=`<rect x="${8+i*11}" y="14" width="8" height="26" rx="2" fill="${C.f}"/>`;}return svgWrap(out);}
+
+/* ---------- Banco de preguntas ---------- */
+const BANK={
+"Numérico":[
+ {q:"¿Qué número continúa la serie? 2, 4, 8, 16, ___", o:["24","32","20","64"], a:1,
+  e:"Cada número se multiplica por 2: 16 × 2 = 32."},
+ {q:"¿Qué número continúa? 1, 1, 2, 3, 5, 8, ___", o:["11","12","13","10"], a:2,
+  e:"Serie de Fibonacci: cada término es la suma de los dos anteriores. 5 + 8 = 13."},
+ {q:"¿Qué número continúa? 1, 4, 9, 16, ___", o:["20","24","25","23"], a:2,
+  e:"Son cuadrados perfectos: 1², 2², 3², 4²… El siguiente es 5² = 25."},
+ {q:"¿Qué número continúa? 2, 5, 10, 17, 26, ___", o:["35","37","36","39"], a:1,
+  e:"Las diferencias crecen de a 2: +3, +5, +7, +9, +11. 26 + 11 = 37."},
+ {q:"¿Qué número continúa? 81, 27, 9, 3, ___", o:["1","0","2","1,5"], a:0,
+  e:"Cada número se divide entre 3: 3 ÷ 3 = 1."},
+ {q:"¿Cuánto es el 15 % de 200?", o:["15","25","30","35"], a:2,
+  e:"15 % de 200 = 0,15 × 200 = 30."},
+ {q:"Un producto cuesta $80 y tiene 25 % de descuento. ¿Precio final?", o:["$55","$60","$65","$70"], a:1,
+  e:"El 25 % de 80 es 20. 80 − 20 = 60."},
+ {q:"Si 3 lápices cuestan $12, ¿cuánto cuestan 5 lápices?", o:["$18","$15","$20","$24"], a:2,
+  e:"Cada lápiz cuesta 12 ÷ 3 = $4. Entonces 5 × 4 = $20."},
+ {q:"Un tren recorre 240 km en 3 horas. ¿Cuál es su velocidad media?", o:["60 km/h","70 km/h","80 km/h","90 km/h"], a:2,
+  e:"Velocidad = distancia ÷ tiempo = 240 ÷ 3 = 80 km/h."},
+ {q:"Si 4 personas hacen un trabajo en 6 días, ¿cuántos días tardan 8 personas?", o:["3","4","2","5"], a:0,
+  e:"Al doblar los trabajadores, el tiempo se reduce a la mitad: 6 ÷ 2 = 3 días."},
+ {q:"El 20 % de un número es 40. ¿Cuál es el número?", o:["80","160","200","220"], a:2,
+  e:"Si 20 % = 40, el 100 % = 40 × 5 = 200."},
+ {q:"¿Qué número continúa? 1, 3, 6, 10, 15, ___", o:["18","20","21","22"], a:2,
+  e:"Se suma uno más cada vez: +2, +3, +4, +5, +6. 15 + 6 = 21."},
+ {q:"¿Cuál es el promedio de 10, 20, 30 y 40?", o:["20","25","30","22"], a:1,
+  e:"(10 + 20 + 30 + 40) ÷ 4 = 100 ÷ 4 = 25."},
+ {q:"¿Qué número continúa? 2, 4, 6, 12, 14, 28, ___", o:["30","42","56","32"], a:0,
+  e:"Se alterna ×2 y +2: 2×2=4, 4+2=6, 6×2=12, 12+2=14, 14×2=28, 28+2=30."},
+ {q:"Un depósito se llena en 2 horas con una canilla. ¿Cuánto tardan 2 canillas iguales?", o:["1 hora","2 horas","30 min","3 horas"], a:0,
+  e:"Con el doble de caudal, se tarda la mitad del tiempo: 1 hora."},
+ {q:"¿Qué número continúa? 7, 14, 28, 56, ___", o:["96","112","84","120"], a:1,
+  e:"Cada número se multiplica por 2: 56 × 2 = 112."}
+],
+"Verbal":[
+ {q:"Elegí el SINÓNIMO de «veloz»:", o:["Lento","Rápido","Pesado","Torpe"], a:1,
+  e:"«Veloz» significa que se mueve con rapidez; su sinónimo es «rápido»."},
+ {q:"Elegí el ANTÓNIMO de «generoso»:", o:["Amable","Espléndido","Tacaño","Bondadoso"], a:2,
+  e:"Lo opuesto a «generoso» es «tacaño» (que da poco o nada)."},
+ {q:"Analogía: Médico es a Hospital como Maestro es a…", o:["Libro","Escuela","Alumno","Pizarra"], a:1,
+  e:"El médico trabaja en el hospital; el maestro trabaja en la escuela (lugar de trabajo)."},
+ {q:"Analogía: Pie es a Zapato como Mano es a…", o:["Dedo","Guante","Anillo","Brazo"], a:1,
+  e:"El zapato cubre el pie; el guante cubre la mano."},
+ {q:"¿Qué palabra NO pertenece al grupo? manzana, pera, zanahoria, banana", o:["manzana","pera","zanahoria","banana"], a:2,
+  e:"La zanahoria es una verdura; las demás son frutas."},
+ {q:"Elegí el SINÓNIMO de «efímero»:", o:["Eterno","Pasajero","Enorme","Sólido"], a:1,
+  e:"«Efímero» significa que dura muy poco; su sinónimo es «pasajero»."},
+ {q:"Elegí el ANTÓNIMO de «abundante»:", o:["Escaso","Numeroso","Amplio","Lleno"], a:0,
+  e:"Lo opuesto a «abundante» (mucho) es «escaso» (poco)."},
+ {q:"Analogía: Caliente es a Frío como Día es a…", o:["Sol","Noche","Tarde","Luz"], a:1,
+  e:"Son pares de opuestos: caliente/frío y día/noche."},
+ {q:"¿Qué palabra NO pertenece? perro, gato, león, mesa", o:["perro","gato","león","mesa"], a:3,
+  e:"«Mesa» es un objeto; las demás son animales."},
+ {q:"Elegí el SINÓNIMO de «sagaz»:", o:["Torpe","Astuto","Lento","Ingenuo"], a:1,
+  e:"«Sagaz» significa listo o perspicaz; su sinónimo es «astuto»."},
+ {q:"Elegí el ANTÓNIMO de «acelerar»:", o:["Correr","Avanzar","Frenar","Empujar"], a:2,
+  e:"Lo opuesto a «acelerar» es «frenar» (reducir la velocidad)."},
+ {q:"Analogía: Libro es a Leer como Comida es a…", o:["Cocinar","Comer","Plato","Hambre"], a:1,
+  e:"Con el libro se lee; con la comida se come (acción propia del objeto)."},
+ {q:"Analogía: Reloj es a Tiempo como Termómetro es a…", o:["Calor","Temperatura","Fiebre","Grados"], a:1,
+  e:"El reloj mide el tiempo; el termómetro mide la temperatura."},
+ {q:"Elegí el ANTÓNIMO de «transparente»:", o:["Claro","Limpio","Opaco","Fino"], a:2,
+  e:"Lo opuesto a «transparente» (deja pasar la luz) es «opaco»."},
+ {q:"¿Qué palabra NO pertenece? rojo, azul, verde, redondo", o:["rojo","azul","verde","redondo"], a:3,
+  e:"«Redondo» es una forma; las demás son colores."},
+ {q:"Elegí el SINÓNIMO de «íntegro»:", o:["Deshonesto","Honesto","Débil","Falso"], a:1,
+  e:"Una persona «íntegra» es honesta y recta."}
+],
+"Abstracto":[
+ {q:"¿Qué figura continúa la serie?", fig:[dots(1),dots(2),dots(3),dots(4)],
+  o:[dots(5),dots(2),dots(4),dots(6)], a:0, isFig:true,
+  e:"En cada paso se agrega un punto: 1, 2, 3, 4… sigue 5 puntos."},
+ {q:"¿Qué figura continúa? (la flecha gira)", fig:[arrow(0),arrow(90),arrow(180)],
+  o:[arrow(0),arrow(270),arrow(90),arrow(180)], a:1, isFig:true,
+  e:"La flecha gira 90° a la derecha cada vez: arriba → derecha → abajo → izquierda."},
+ {q:"¿Qué figura continúa? (según el número de lados)", fig:[poly(3),poly(4),poly(5)],
+  o:[poly(4),poly(6),poly(3),poly(7)], a:1, isFig:true,
+  e:"El número de lados aumenta de a uno: triángulo (3), cuadrado (4), pentágono (5), hexágono (6)."},
+ {q:"¿Qué figura continúa? (llenado alternado)", fig:[circle(1),circle(0),circle(1),circle(0)],
+  o:[circle(0),circle(1),circle(1),circle(0)], a:1, isFig:true,
+  e:"Se alternan círculo lleno y vacío. Después de uno vacío viene uno lleno."},
+ {q:"¿Qué figura continúa? (cantidad de barras)", fig:[bars(1),bars(2),bars(3)],
+  o:[bars(2),bars(4),bars(3),bars(1)], a:1, isFig:true,
+  e:"Se agrega una barra en cada paso: 1, 2, 3… sigue 4 barras."},
+ {q:"¿Qué figura continúa? (giro de 90°)", fig:[arrow(90),arrow(180),arrow(270)],
+  o:[arrow(90),arrow(0),arrow(180),arrow(270)], a:1, isFig:true,
+  e:"La flecha sigue girando 90° a la derecha: derecha → abajo → izquierda → arriba (0°)."},
+ {q:"¿Qué figura continúa? (puntos decrecientes)", fig:[dots(6),dots(5),dots(4)],
+  o:[dots(5),dots(3),dots(2),dots(4)], a:1, isFig:true,
+  e:"En cada paso se quita un punto: 6, 5, 4… sigue 3 puntos."},
+ {q:"¿Qué figura completa la serie? (lados crecientes)", fig:[poly(4),poly(5),poly(6)],
+  o:[poly(5),poly(7),poly(4),poly(6)], a:1, isFig:true,
+  e:"Cuadrado (4), pentágono (5), hexágono (6)… sigue el heptágono (7 lados)."}
+],
+"Atención":[
+ {q:"¿Cuál opción es EXACTAMENTE igual al modelo?  R7X2M9K", o:["R7X2M9K","R7X2N9K","R7X2M9H","R7Z2M9K"], a:0,
+  e:"Solo «R7X2M9K» coincide carácter por carácter con el modelo."},
+ {q:"¿Cuál opción es EXACTAMENTE igual al modelo?  48-2093-BXQ", o:["48-2098-BXQ","48-2093-BXO","48-2093-BXQ","48-2093-BQX"], a:2,
+  e:"«48-2093-BXQ» es idéntico; las otras cambian un dígito o el orden final."},
+ {q:"En la secuencia 3 8 3 3 8 3 8 8 3, ¿cuántas veces aparece el 8?", o:["3","4","5","2"], a:1,
+  e:"Contando: 8 aparece en las posiciones 2, 5, 7 y 8 → 4 veces."},
+ {q:"¿Cuál par está formado por elementos IDÉNTICOS?", o:["ABX9 / ABX9","AB9X / ABX9","ABXQ / ABX9","ABX9 / ABXG"], a:0,
+  e:"Solo «ABX9 / ABX9» tiene los dos elementos exactamente iguales."},
+ {q:"¿Cuál opción es DIFERENTE a las demás?", o:["MQ7145","MQ7145","MQ7154","MQ7145"], a:2,
+  e:"«MQ7154» invierte el orden de los últimos dígitos (54 en vez de 45)."},
+ {q:"En la palabra «CANASTA», ¿cuántas letras «A» hay?", o:["2","3","4","1"], a:1,
+  e:"C-A-N-A-S-T-A: la «A» aparece 3 veces."},
+ {q:"¿Cuál opción es EXACTAMENTE igual al modelo?  KL·9920·ZT", o:["KL·9920·ZT","KL·9902·ZT","KI·9920·ZT","KL·9920·TZ"], a:0,
+  e:"«KL·9920·ZT» coincide en todo; las demás alteran un dígito o dos letras."},
+ {q:"¿Cuántos números PARES hay en: 7 4 3 8 5 2 9 6?", o:["3","4","5","2"], a:1,
+  e:"Los pares son 4, 8, 2 y 6 → 4 números pares."},
+ {q:"¿Cuál par NO es idéntico?", o:["X5T2 / X5T2","98KM / 98KM","QRW7 / QRW7","5B3P / 5B8P"], a:3,
+  e:"En «5B3P / 5B8P» el tercer carácter cambia (3 vs 8); los demás pares son iguales."},
+ {q:"En la serie ▲ ● ▲ ▲ ● ● ▲ ● ▲, ¿cuántos ▲ hay?", o:["5","4","6","3"], a:0,
+  e:"Contando los triángulos ▲: posiciones 1, 3, 4, 7 y 9 → 5 en total."}
+]
+};
+
+/* ---------- Estado y render ---------- */
+const cats=Object.keys(BANK);
+let curCat=cats[0], idx=0, score=0, answered=[];
+const tabsEl=document.getElementById('tabs');
+const cardEl=document.getElementById('card');
+
+function initTabs(){
+  tabsEl.innerHTML='';
+  cats.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='tab'+(c===curCat?' active':'');
+    b.innerHTML=`<span class="dot"></span>${c}`;
+    b.onclick=()=>{curCat=c;idx=0;score=0;answered=[];initTabs();render();};
+    tabsEl.appendChild(b);
+  });
+}
+
+function render(){
+  const list=BANK[curCat];
+  document.getElementById('curNum').textContent=idx+1;
+  document.getElementById('totNum').textContent=list.length;
+  document.getElementById('score').textContent=score;
+  document.getElementById('progFill').style.width=((idx)/(list.length)*100)+'%';
+
+  if(idx>=list.length){renderDone();return;}
+  const item=list[idx];
+  const state=answered[idx]; // {picked, correct} o undefined
+
+  let figHtml='';
+  if(item.fig){
+    figHtml='<div class="qfig">'+item.fig.map(f=>`<div class="figbox q">${f}</div>`).join('<span style="color:var(--muted);font-size:1.4rem">→</span>')+
+      '<span style="color:var(--muted);font-size:1.4rem">→</span><div class="figbox q" style="border-style:dashed">?</div></div>';
+  }
+
+  const optsHtml=item.o.map((op,i)=>{
+    let cls='opt';
+    if(state){
+      cls+=' locked';
+      if(i===item.a) cls+=' correct';
+      else if(i===state.picked) cls+=' wrong';
+    }
+    const content=item.isFig?op:`<span>${op}</span>`;
+    const key=String.fromCharCode(65+i);
+    return `<button class="${cls}" data-i="${i}" ${state?'disabled':''}>
+      <span class="key">${key}</span>${item.isFig?'':''}${content}</button>`;
+  }).join('');
+
+  cardEl.innerHTML=`
+    <div class="qmeta"><span class="catchip">${curCat}</span><span>Pregunta ${idx+1} de ${list.length}</span></div>
+    <p class="qtext">${item.q}</p>
+    ${figHtml}
+    <div class="opts">${optsHtml}</div>
+    <div class="explain ${state?(state.correct?'good show':'bad show'):''}" id="exp">
+      <b>${state?(state.correct?'✅ ¡Correcto!':'❌ Incorrecto'):''}</b>${item.e}
+    </div>
+    <div class="nav">
+      <button class="btn" id="prev" ${idx===0?'disabled':''}>← Anterior</button>
+      <button class="btn primary" id="next">${idx===list.length-1?'Ver resultado':'Siguiente →'}</button>
+    </div>`;
+
+  cardEl.querySelectorAll('.opt').forEach(btn=>{
+    btn.onclick=()=>{
+      if(answered[idx])return;
+      const i=+btn.dataset.i;
+      const correct=i===item.a;
+      answered[idx]={picked:i,correct};
+      if(correct)score++;
+      render();
+    };
+  });
+  document.getElementById('prev').onclick=()=>{if(idx>0){idx--;render();}};
+  document.getElementById('next').onclick=()=>{idx++;render();};
+}
+
+function renderDone(){
+  const list=BANK[curCat];
+  const pct=Math.round(score/list.length*100);
+  let msg = pct>=80?'¡Excelente! Dominás esta categoría.':
+            pct>=50?'Muy bien, seguí practicando para afinar.':
+                    'A practicar más: repetí la categoría.';
+  document.getElementById('progFill').style.width='100%';
+  cardEl.innerHTML=`
+    <div class="done">
+      <h2>Categoría completada: ${curCat}</h2>
+      <div class="score">${score}/${list.length}</div>
+      <p style="color:var(--muted)">${pct}% de aciertos · ${msg}</p>
+      <div class="nav" style="justify-content:center">
+        <button class="btn" id="retry">🔄 Reintentar</button>
+        <button class="btn primary" id="review">Revisar respuestas</button>
+      </div>
+    </div>`;
+  document.getElementById('retry').onclick=()=>{idx=0;score=0;answered=[];render();};
+  document.getElementById('review').onclick=()=>{idx=0;render();};
+}
+
+initTabs();
+render();
+</script>
+</body>
+</html>
